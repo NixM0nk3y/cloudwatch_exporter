@@ -2,9 +2,10 @@ package main
 
 import (
 	"errors"
+	"time"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/technofy/cloudwatch_exporter/config"
-	"time"
 )
 
 var (

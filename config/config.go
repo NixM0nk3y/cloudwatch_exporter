@@ -3,9 +3,10 @@ package config
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"strings"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 type Metric struct {
@@ -15,7 +16,7 @@ type Metric struct {
 	Statistics            []string            `yaml:"aws_statistics"`
 	Dimensions            []string            `yaml:"aws_dimensions,omitempty"`
 	DimensionsSelect      map[string][]string `yaml:"aws_dimensions_select,omitempty"`
-	DimensionsSelectRegex      map[string]string `yaml:"aws_dimensions_select_regex,omitempty"`
+	DimensionsSelectRegex map[string]string   `yaml:"aws_dimensions_select_regex,omitempty"`
 	DimensionsSelectParam map[string][]string `yaml:"aws_dimensions_select_param,omitempty"`
 
 	RangeSeconds  int `yaml:"range_seconds,omitempty"`
