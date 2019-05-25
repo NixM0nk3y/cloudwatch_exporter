@@ -28,6 +28,7 @@ type cwCollectorTemplate struct {
 type cwCollector struct {
 	Region            string
 	Target            string
+	Account           string
 	ScrapeTime        prometheus.Gauge
 	ErroneousRequests prometheus.Counter
 	Template          *cwCollectorTemplate
@@ -75,9 +76,16 @@ func generateTemplates(cfg *config.Settings) {
 // NewCwCollector creates a new instance of a CwCollector for a specific task
 // The newly created instance will reference its parent template so that metric descriptions are not recreated on every call.
 // It returns either a pointer to a new instance of cwCollector or an error.
-func NewCwCollector(target string, taskName string, region string) (*cwCollector, error) {
+func NewCwCollector(target string, taskName string, region string, account string) (*cwCollector, error) {
 	// Check if task exists
 	task, err := settings.GetTask(taskName)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if account exists
+	account, err := settings.GetAccount(account)
 
 	if err != nil {
 		return nil, err
@@ -92,8 +100,9 @@ func NewCwCollector(target string, taskName string, region string) (*cwCollector
 	}
 
 	return &cwCollector{
-		Region: region,
-		Target: target,
+		Region:  region,
+		Target:  target,
+		Account: account,
 		ScrapeTime: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "cloudwatch_exporter_scrape_duration_seconds",
 			Help: "Time this CloudWatch scrape took, in seconds.",

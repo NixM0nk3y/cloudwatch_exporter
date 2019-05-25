@@ -29,10 +29,17 @@ type Task struct {
 	Metrics       []Metric `yaml:"metrics"`
 }
 
+type Account struct {
+	Name          string `yaml:"name"`
+	DefaultRegion string `yaml:"default_region,omitempty"`
+	RoleArn       string `yaml:"rolearn"`
+}
+
 type Settings struct {
-	AutoReload  bool   `yaml:"auto_reload,omitempty"`
-	ReloadDelay int    `yaml:"auto_reload_delay,omitempty"`
-	Tasks       []Task `yaml:"tasks"`
+	AutoReload  bool      `yaml:"auto_reload,omitempty"`
+	ReloadDelay int       `yaml:"auto_reload_delay,omitempty"`
+	Tasks       []Task    `yaml:"tasks"`
+	Accounts    []Account `yaml:"accounts"`
 }
 
 func (s *Settings) GetTask(name string) (*Task, error) {
@@ -43,6 +50,20 @@ func (s *Settings) GetTask(name string) (*Task, error) {
 	}
 
 	return nil, errors.New(fmt.Sprintf("can't find task '%s' in configuration", name))
+}
+
+func (s *Settings) GetAccount(name string) (*Account, error) {
+	for i := range s.Accounts {
+		if strings.Compare(s.Accounts[i].Name, name) == 0 {
+			return &s.Accounts[i], nil
+		}
+	}
+
+	// this is o.k. we'll fall back to the default account
+	return &Account{
+		Name:    "default",
+		RoleArn: "",
+	}, nil
 }
 
 func Load(filename string) (*Settings, error) {
