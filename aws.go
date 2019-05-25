@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,11 +27,25 @@ func getLatestDatapoint(datapoints []*cloudwatch.Datapoint) *cloudwatch.Datapoin
 // scrape makes the required calls to AWS CloudWatch by using the parameters in the cwCollector
 // Once converted into Prometheus format, the metrics are pushed on the ch channel.
 func scrape(collector *cwCollector, ch chan<- prometheus.Metric) {
+
+	var svc *cloudwatch.CloudWatch
+
 	session := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(collector.Region),
 	}))
 
-	svc := cloudwatch.New(session)
+	if collector.Account.Name != "default" {
+		// Switch to another account
+		creds := stscreds.NewCredentials(session, collector.Account.RoleArn)
+
+		svc = cloudwatch.New(session, &aws.Config{Credentials: creds})
+
+	} else {
+		// default to base aws account
+		svc = cloudwatch.New(session)
+
+	}
+
 	for m := range collector.Template.Metrics {
 		metric := &collector.Template.Metrics[m]
 
@@ -173,8 +188,9 @@ func scrape(collector *cwCollector, ch chan<- prometheus.Metric) {
 				params.Dimensions = dimensions
 
 				labels = append(labels, collector.Template.Task.Name)	
-				scrapeSingleDataPoint(collector,ch,params,metric,labels,svc)
-			
+				labels = append(labels, collector.Account.Name)
+				scrapeSingleDataPoint(collector, ch, params, metric, labels, svc)
+
 			}
 		}
 	}

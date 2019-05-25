@@ -108,3 +108,11 @@ tasks:
       aws_metric_name: Reputation.BounceRate
       aws_statistics: [Maximum]
       range_seconds: 3600
+
+accounts:
+  - name: development
+    rolearn: arn:aws:iam::012345678910:role/company-development-monitoring
+  - name: staging
+    rolearn: arn:aws:iam::012345678911:role/company-staging-monitoring
+  - name: production
+    rolearn: arn:aws:iam::012345678912:role/company-production-monitoring

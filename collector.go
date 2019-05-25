@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/NixM0nk3y/cloudwatch_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/technofy/cloudwatch_exporter/config"
 )
 
 var (
@@ -29,7 +29,7 @@ type cwCollectorTemplate struct {
 type cwCollector struct {
 	Region            string
 	Target            string
-	Account           string
+	Account           *config.Account
 	ScrapeTime        prometheus.Gauge
 	ErroneousRequests prometheus.Counter
 	Template          *cwCollectorTemplate
@@ -55,6 +55,7 @@ func generateTemplates(cfg *config.Settings) {
 				labels[i] = toSnakeCase(metric.Dimensions[i])
 			}
 			labels = append(labels, "task")
+			labels = append(labels, "account")
 
 			for s := range metric.Statistics {
 				template.Metrics = append(template.Metrics, cwMetric{
@@ -77,7 +78,7 @@ func generateTemplates(cfg *config.Settings) {
 // NewCwCollector creates a new instance of a CwCollector for a specific task
 // The newly created instance will reference its parent template so that metric descriptions are not recreated on every call.
 // It returns either a pointer to a new instance of cwCollector or an error.
-func NewCwCollector(target string, taskName string, region string, account string) (*cwCollector, error) {
+func NewCwCollector(target string, taskName string, region string, accountName string) (*cwCollector, error) {
 	// Check if task exists
 	task, err := settings.GetTask(taskName)
 
@@ -86,7 +87,7 @@ func NewCwCollector(target string, taskName string, region string, account strin
 	}
 
 	// Check if account exists
-	account, err := settings.GetAccount(account)
+	account, err := settings.GetAccount(accountName)
 
 	if err != nil {
 		return nil, err

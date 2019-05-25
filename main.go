@@ -9,9 +9,9 @@ import (
 	"os"
 	"sync"
 
+	"github.com/NixM0nk3y/cloudwatch_exporter/config"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/technofy/cloudwatch_exporter/config"
 )
 
 var (
